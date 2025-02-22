@@ -14,7 +14,7 @@ local Extensions = require("harpoon.extensions")
 ---@field ui_width_ratio? number this is the ratio of the editor window to use
 ---@field ui_max_width? number this is the max width the window can be
 ---@field height_in_lines? number this is the max height in lines that the window can be
----@field window_position? WindowPosition this is the position of the window
+---@field window_position? HarpoonWindowPosition this is the position of the window
 
 ---@return HarpoonToggleOptions
 local function toggle_config(config)
