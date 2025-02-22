@@ -2,6 +2,10 @@ local Buffer = require("harpoon.buffer")
 local Logger = require("harpoon.logger")
 local Extensions = require("harpoon.extensions")
 
+---@class HarpoonWindowPosition
+---@field row fun(height: number): number
+---@field col fun(width: number): number
+
 ---@class HarpoonToggleOptions
 ---@field border? any this value is directly passed to nvim_open_win
 ---@field title_pos? any this value is directly passed to nvim_open_win
@@ -10,6 +14,7 @@ local Extensions = require("harpoon.extensions")
 ---@field ui_width_ratio? number this is the ratio of the editor window to use
 ---@field ui_max_width? number this is the max width the window can be
 ---@field height_in_lines? number this is the max height in lines that the window can be
+---@field window_position? WindowPosition this is the position of the window
 
 ---@return HarpoonToggleOptions
 local function toggle_config(config)
@@ -95,14 +100,25 @@ function HarpoonUI:_create_window(toggle_opts)
         width = toggle_opts.ui_max_width
     end
 
+    local window_position = {
+        row = (toggle_opts.window_position and toggle_opts.window_position.row)
+            or function(height)
+                return math.floor((vim.o.lines - height) / 2)
+            end,
+        col = (toggle_opts.window_position and toggle_opts.window_position.col)
+            or function(width)
+                return math.floor((vim.o.columns - width) / 2)
+            end,
+    }
+
     local height = toggle_opts.height_in_lines or 8 -- 8 lines is default height
     local bufnr = vim.api.nvim_create_buf(false, true)
     local win_id = vim.api.nvim_open_win(bufnr, true, {
         relative = "editor",
         title = toggle_opts.title or "Harpoon",
         title_pos = toggle_opts.title_pos or "left",
-        row = math.floor(((vim.o.lines - height) / 2) - 1),
-        col = math.floor((vim.o.columns - width) / 2),
+        row = window_position.row(height),
+        col = window_position.col(width),
         width = width,
         height = height,
         style = "minimal",
